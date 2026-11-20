@@ -1,1 +1,25 @@
-
+name: Build plugin
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unzip
+        run: |
+          if [ -f CustomShop.zip ]; then unzip -q -o CustomShop.zip; fi
+          POM=$(find . -name pom.xml | head -1)
+          echo "PROJECT_DIR=$(dirname "$POM")" >> "$GITHUB_ENV"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Build
+        run: mvn -B package
+        working-directory: ${{ env.PROJECT_DIR }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CustomShop
+          path: ${{ env.PROJECT_DIR }}/target/CustomShop.jar
